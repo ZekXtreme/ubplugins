@@ -9,11 +9,11 @@
 # All rights reserved
 
 import asyncio
-import json
+# import json
 from abc import ABC, abstractmethod
 from typing import Optional, Tuple
 
-import aiohttp
+# import aiohttp
 import spamwatch
 from UsergeAntiSpamApi import Client
 from pyrogram.errors.exceptions.bad_request_400 import (
@@ -141,25 +141,6 @@ class GBanHandler(AbstractHandler):
                                         {"$set": {'chat_ids': chat_ids}}, upsert=True)
 
 
-class CASHandler(AbstractHandler):
-    def __init__(self) -> None:
-        self._url = "https://api.cas.chat/check?user_id={user_id}"
-        super().__init__("CAS")
-
-    async def get_data(self, user_id: int):
-        url = self._url.format(user_id=user_id)
-        async with aiohttp.ClientSession() as ses, ses.get(url) as resp:
-            try:
-                data = json.loads(await resp.text())
-            except json.decoder.JSONDecodeError:
-                data = dict(ok=False)
-            if data.get('ok'):
-                return data
-
-    def get_reason(self, data) -> Optional[str]:
-        return ' | '.join(data['result']['messages']) if 'result' in data else None
-
-
 class UsergeAntiSpamHandler(AbstractHandler):
     def __init__(self) -> None:
         self._client = Client(antispam.USERGE_ANTISPAM_API)
@@ -195,8 +176,6 @@ def _re_init_handler():
     global HANDLER  # pylint: disable=global-statement
     handler = GBanHandler()
     if antispam.Dynamic.ANTISPAM_SENTRY:
-        # tmp = handler.set_next(CASHandler())
-        # api.cas.chat down
         tmp = handler
         if antispam.USERGE_ANTISPAM_API:
             tmp = tmp.set_next(UsergeAntiSpamHandler())

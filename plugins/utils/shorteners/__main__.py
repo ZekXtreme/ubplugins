@@ -8,38 +8,25 @@
 #
 # All rights reserved.
 
-# By @Krishna_Singhal
-
+import requests
 import gdshortener
-from pyrogram.errors import YouBlockedUser
 
 from userge import userge, Message
-from userge.utils.exceptions import StopConversation
 
 
-@userge.on_cmd("bitly", about={
-    'header': "Shorten Any Url using bit.ly",
-    'usage': "{tr}bitly [link or reply]"}, allow_via_bot=False)
-async def bitly(msg: Message):
-    url = msg.input_or_reply_str
-    if not url:
+@userge.on_cmd("nocry", about={
+    'header': "Shorten Any Url using nocry.me",
+    'usage': "{tr}nocry [link or reply]"})
+async def nocry(msg: Message):
+    link = msg.input_or_reply_str
+    if not link:
         await msg.err("need url to shorten")
         return
     try:
-        async with userge.conversation("Sl_BitlyBot") as conv:
-            try:
-                await conv.send_message("/start")
-            except YouBlockedUser:
-                await userge.unblock_user("Sl_BitlyBot")
-                await conv.send_message("/start")
-            await conv.get_response(mark_read=True)
-            await conv.send_message(url)
-            shorten_url = (
-                await conv.get_response(mark_read=True)
-            ).text.split('\n', maxsplit=1)[-1]
-            await msg.edit(f"`{shorten_url}`", disable_web_page_preview=True)
-    except StopConversation:
-        await msg.err("bot is down")
+        short = requests.get(f'https://nocry.me/api/create?url={link}').text
+        await msg.edit(f"`{short}`", disable_web_page_preview=True)
+    except Exception:
+        await msg.err("API is down")
 
 
 @userge.on_cmd("isgd", about={

@@ -428,31 +428,31 @@ async def video_compress(message: Message):
             Path(f"downloads/{file_name}").unlink(missing_ok=True)
 
 
-@userge.on_cmd("minfo", about={
-    'header': "Get media info",
-    'flags': {'-d': 'Delete media after process done'},
-    'usage': "{tr}minfo [file / folder path | direct link | reply to telegram file]",
-    'examples': ['{tr}minfo link', '{tr}minfo path']}, check_downpath=True)
-async def media_info(message: Message):
-    """ get media info """
-    data = await get_media_path_and_name(message)
-    if not data:
-        return
+# @userge.on_cmd("minfo", about={
+#     'header': "Get media info",
+#     'flags': {'-d': 'Delete media after process done'},
+#     'usage': "{tr}minfo [file / folder path | direct link | reply to telegram file]",
+#     'examples': ['{tr}minfo link', '{tr}minfo path']}, check_downpath=True)
+# async def media_info(message: Message):
+#     """ get media info """
+#     data = await get_media_path_and_name(message)
+#     if not data:
+#         return
 
-    dl_loc, file_name = data
-    FF_MPEG_DOWN_LOAD_MEDIA_PATH.mkdir(parents=True, exist_ok=True)
-    await message.edit("`Extracting media info...`")
-    start = datetime.now()
+#     dl_loc, file_name = data
+#     FF_MPEG_DOWN_LOAD_MEDIA_PATH.mkdir(parents=True, exist_ok=True)
+#     await message.edit("`Extracting media info...`")
+#     start = datetime.now()
 
-    try:
-        info = await probe(dl_loc)
-        await message.reply_or_send_as_file(
-            f"`{json.dumps(info, indent=1, ensure_ascii=False)}`"
-        )
-    except ffmpeg.Error as e:
-        await message.err(f"`{e.stderr}`")
-    else:
-        await message.edit(f"`Done in in {(datetime.now() - start).seconds} seconds!`")
-    finally:
-        if '-d' in message.flags:
-            Path(f"downloads/{file_name}").unlink(missing_ok=True)
+#     try:
+#         info = await probe(dl_loc)
+#         await message.reply_or_send_as_file(
+#             f"`{json.dumps(info, indent=1, ensure_ascii=False)}`"
+#         )
+#     except ffmpeg.Error as e:
+#         await message.err(f"`{e.stderr}`")
+#     else:
+#         await message.edit(f"`Done in in {(datetime.now() - start).seconds} seconds!`")
+#     finally:
+#         if '-d' in message.flags:
+#             Path(f"downloads/{file_name}").unlink(missing_ok=True)
