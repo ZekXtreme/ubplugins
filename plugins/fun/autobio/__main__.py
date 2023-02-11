@@ -16,7 +16,7 @@ import time
 from pyrogram.errors import FloodWait
 
 from userge import userge, Message, get_collection
-from .resources.quotes import ENGLISH_QUOTES, HINDI_QUOTES
+from .resources.quotes import ENGLISH_QUOTES
 
 BIO_UPDATION = False
 AUTOBIO_TIMEOUT = 300
@@ -57,10 +57,8 @@ async def auto_bio(msg: Message):
             "Auto Bio Updation is **Stopped** Successfully...", log=__name__, del_in=5)
         return
 
-    if 'hi' in msg.input_str.lower():
-        BIO_QUOTES = HINDI_QUOTES
-    else:
-        BIO_QUOTES = ENGLISH_QUOTES
+
+    BIO_QUOTES = ENGLISH_QUOTES
 
     USER_DATA.update_one({'_id': 'BIO_UPDATION'},
                          {"$set": {'on': True}}, upsert=True)

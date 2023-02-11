@@ -19,12 +19,8 @@ async def see_repo(message: Message):
     output = f"""
 **Hey**, __I am using__ 🔥 **Userge** 🔥
 
-    __Durable as a Serge__
-
 • **userge version** : `{await versions.get_full_version()}`
 • **loader version** : `{versions.__loader_version__}`
-• **license** : {versions.__license__}
-• **copyright** : {versions.__copyright__}
 • **repo** : [Userge]({UPSTREAM_REPO})
 """
     await message.edit(output)

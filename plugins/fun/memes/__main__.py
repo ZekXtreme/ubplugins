@@ -9,306 +9,48 @@
 # All rights reserved.
 
 import asyncio
-import os
-from collections import deque
-from random import choice, getrandbits, randint
-from re import sub
+from urllib import parse
+from random import choice,  randint  
+import aiohttp
 
 from pyrogram import enums
-
 import requests
-import wget
-from cowpy import cow
-
-from userge import userge, Message, pool
+from userge import userge, Message
 
 
-@userge.on_cmd(r"(?:Kek|:/)$",
-               about={'header': "Check yourself, hint: `:/`"}, name='Kek',
-               trigger='', allow_via_bot=False)
-async def kek_(message: Message):
-    """kek"""
-    kek = ["/", "\\"]
-    for i in range(1, 9):
-        await message.try_to_edit(":" + kek[i % 2])
+@userge.on_cmd("bakk", about={'header': "Check yourself ;)"})
+async def bakk_(message: Message):
+    await message.edit("Zek Will Be Back after few hours For More Bakchodi")
 
-
-@userge.on_cmd(r"(?:Lol|-_-)$",
-               about={'header': "Check yourself, hint: `-_-`"}, name='Lol',
-               trigger='', allow_via_bot=False)
-async def lol_(message: Message):
-    """lol"""
-    lol = "-_ "
-    for i in range(9):
-        if i % 3 == 0:
-            lol = "-_ "
-        lol = lol[:-1] + "_-"
-        await message.try_to_edit(lol, parse_mode=enums.ParseMode.HTML)
-
-
-@userge.on_cmd(r"(?:Fun|;_;)$",
-               about={'header': "Check yourself, hint: `;_;`"}, name="Fun",
-               trigger='', allow_via_bot=False)
-async def fun_(message: Message):
-    """fun"""
-    fun = ";_ "
-    for i in range(9):
-        if i % 3 == 0:
-            fun = ";_ "
-        fun = fun[:-1] + "_;"
-        await message.try_to_edit(fun, parse_mode=enums.ParseMode.HTML)
-
-
-@userge.on_cmd("Oof$", about={'header': "Ooooof"},
-               trigger='', allow_via_bot=False)
-async def Oof_(message: Message):
-    """Oof"""
-    Oof = "Oo "
-    for _ in range(6):
-        Oof = Oof[:-1] + "of"
-        await message.try_to_edit(Oof)
-
-
-@userge.on_cmd("Hmm$", about={'header': "Hmmmmm"},
-               trigger='', allow_via_bot=False)
-async def Hmm_(message: Message):
-    """Hmm"""
-    Hmm = "Hm "
-    for _ in range(4):
-        Hmm = Hmm[:-1] + "mm"
-        await message.try_to_edit(Hmm)
-
-
-async def check_and_send(message: Message, *args, **kwargs):
-    replied = message.reply_to_message
-    if replied:
-        await asyncio.gather(
-            message.delete(),
-            replied.reply(*args, **kwargs)
-        )
-    else:
-        await message.edit(*args, **kwargs)
-
-
-@userge.on_cmd("fp$", about={'header': "Facepalm :P"})
-async def facepalm_(message: Message):
-    """facepalm_"""
-    await check_and_send(message, "🤦‍♂")
-
-
-@userge.on_cmd("cry$", about={'header': "y u du dis, i cri"})
-async def cry_(message: Message):
-    """cry"""
-    await check_and_send(message, choice(CRI), parse_mode=enums.ParseMode.HTML)
-
-
-@userge.on_cmd("insult$", about={'header': "Check yourself ;)"})
-async def insult_(message: Message):
-    """insult"""
-    await check_and_send(message, choice(INSULT_STRINGS), parse_mode=enums.ParseMode.HTML)
-
-
-@userge.on_cmd("hi", about={
-    'header': "Greet everyone!",
-    'usage': "{tr}hi\n{tr}hi [emoji | character]\n{tr}hi [emoji | character] [emoji | character]"})
-async def hi_(message: Message):
-    """hi"""
-    input_str = message.input_str
-    if not input_str:
-        await message.edit(choice(HELLOSTR), parse_mode=enums.ParseMode.HTML)
-    else:
-        args = input_str.split()
-        if len(args) == 2:
-            paytext, filler = args
-        else:
-            paytext = args[0]
-            filler = choice(EMOJIS)
-        pay = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}".format(
-            paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2,
-            paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2,
-            paytext * 2 + filler * 4 + paytext * 2 + filler * 4,
-            paytext * 2 + filler * 4 + paytext * 2 + filler * 4,
-            paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2,
-            paytext * 8 + filler * 2 + paytext * 2,
-            paytext * 8 + filler * 2 + paytext * 2,
-            paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2,
-            paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2,
-            paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2,
-            paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2,
-            paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2)
-        await message.edit(pay)
-
-
-@userge.on_cmd("react", about={
-    'header': "Make your userbot react to everything",
-    'types': ['happy', 'thinking', 'waving', 'wtf', 'love', 'confused', 'dead', 'sad', 'dog'],
-    'usage': "{tr}react [type]",
-    'examples': ["{tr}react", "{tr}react dead"]})
-async def react_(message: Message):
-    """react"""
-    type_ = message.input_str
-    if "happy" in type_:
-        out = choice(HAPPY)
-    elif "thinking" in type_:
-        out = choice(THINKING)
-    elif "waving" in type_:
-        out = choice(WAVING)
-    elif "wtf" in type_:
-        out = choice(WTF)
-    elif "love" in type_:
-        out = choice(LOVE)
-    elif "confused" in type_:
-        out = choice(CONFUSED)
-    elif "dead" in type_:
-        out = choice(DEAD)
-    elif "sad" in type_:
-        out = choice(SAD)
-    elif "dog" in type_:
-        out = choice(DOG)
-    else:
-        out = choice(FACEREACTS)
-    await check_and_send(message, out, parse_mode=enums.ParseMode.HTML)
-
-
-@userge.on_cmd("shg$", about={'header': "Shrug at it !!"})
-async def shrugger(message: Message):
-    """shrugger"""
-    await check_and_send(message, choice(SHGS), parse_mode=enums.ParseMode.HTML)
-
-
-@userge.on_cmd("chase$", about={'header': "You better start running"})
-async def chase_(message: Message):
-    """chase"""
-    await check_and_send(message, choice(CHASE_STR), parse_mode=enums.ParseMode.HTML)
-
-
-@userge.on_cmd("run$", about={'header': "Let Me Run, run, RUNNN!"})
-async def run_(message: Message):
-    """run"""
-    await check_and_send(message, choice(RUNS_STR), parse_mode=enums.ParseMode.HTML)
-
-
-@userge.on_cmd("metoo$", about={'header': "Haha yes"})
-async def metoo_(message: Message):
-    """metoo"""
-    await check_and_send(message, choice(METOOSTR), parse_mode=enums.ParseMode.HTML)
-
-
-@userge.on_cmd("10iq$", about={'header': "You retard !!"}, name="10iq")
-async def iqless(message: Message):
-    """iqless"""
-    await check_and_send(message, "♿")
-
-
-@userge.on_cmd("moon$", about={'header': "kensar moon animation"})
-async def moon_(message: Message):
-    """moon"""
-    deq = deque(list("🌗🌘🌑🌒🌓🌔🌕🌖"))
-    try:
-        for _ in range(32):
-            await message.edit("".join(deq))
-            deq.rotate(1)
-    except Exception:  # pylint: disable=broad-except
-        await message.delete()
-
-
-@userge.on_cmd("clock$", about={'header': "kensar clock animation"})
-async def clock_(message: Message):
-    """clock"""
-    deq = deque(list("🕚🕙🕘🕗🕖🕕🕔🕓🕒🕑🕐🕛"))
-    try:
-        for _ in range(36):
-            await message.edit("".join(deq))
-            deq.rotate(1)
-    except Exception:  # pylint: disable=broad-except
-        await message.delete()
-
-
-@userge.on_cmd("bt$", about={
-    'header': "Believe me, you will find this useful",
-    'usage': "{tr}bt [reply to msg]"})
-async def bluetext(message: Message):
-    """bluetext"""
-    if message.reply_to_message:
-        await message.edit(
-            "/BLUETEXT /MUST /CLICK.\n"
-            "/ARE /YOU /A /STUPID /ANIMAL /WHICH /IS /ATTRACTED /TO /COLOURS?")
-
-
-@userge.on_cmd("f (.+)", about={
-    'header': "Pay Respects",
-    'usage': "{tr}f [emoji | character]"})
-async def payf_(message: Message):
-    """payf"""
-    paytext = message.input_str
-    pay = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}".format(
-        paytext * 8, paytext * 8, paytext * 2, paytext * 2, paytext * 2,
-        paytext * 6, paytext * 6, paytext * 2, paytext * 2, paytext * 2,
-        paytext * 2, paytext * 2)
-    await message.edit(pay)
-
-
-@userge.on_cmd("clap", about={
-    'header': "Praise people!",
-    'usage': "{tr}clap [input | reply to msg]"})
-async def clap_(message: Message):
-    """clap"""
-    input_str = message.input_or_reply_str
-    if not input_str:
-        await message.err("`Hah, I don't clap pointlessly!`")
+@userge.on_cmd("pat", about={
+    'header': "Give head Pat xD",
+    'flags': {'-g': "For Pat Gifs"},
+    'usage': "{tr}pat [reply | username]\n{tr}pat -g [reply]"})
+async def pat(message: Message):
+    username = message.filtered_input_str
+    reply = message.reply_to_message
+    reply_id = reply.id if reply else message.id
+    if not username and not reply:
+        await message.edit("**Bruh** ~`Reply to a message or provide username`", del_in=3)
         return
-    reply_text = "👏 "
-    reply_text += input_str.replace(" ", " 👏 ")
-    reply_text += " 👏"
-    await message.edit(reply_text)
+    kwargs = {"reply_to_message_id": reply_id, "caption": username}
 
+    if "-g" in message.flags:
+        async with aiohttp.ClientSession() as session, session.get(
+            "https://nekos.life/api/pat"
+        ) as request:
+            result = await request.json()
+            link = result.get("url")
+            await message.client.send_animation(
+                message.chat.id, animation=link, **kwargs
+            )
+    else:
+        async with aiohttp.ClientSession() as session:
+            chi_c = await session.get("https://headp.at/js/pats.json")
+            uri = f"https://headp.at/pats/{parse.quote(choice(await chi_c.json()))}"
+        await message.reply_photo(uri, **kwargs)
 
-@userge.on_cmd("(\\w+)say (.+)", about={
-    'header': "cow which says things",
-    'usage': "{tr}[any cowacter]say [text]",
-    'cowacters': f"`{'`,    `'.join(cow.COWACTERS)}`"}, name="cowsay")
-async def cowsay_(message: Message):
-    """cowsay"""
-    arg = message.matches[0].group(1).lower()
-    text = message.matches[0].group(2)
-    if arg == "cow":
-        arg = "default"
-    if arg not in cow.COWACTERS:
-        await message.err("cowacter not found!")
-        return
-    cheese = cow.get_cow(arg)
-    cheese = cheese()
-    await message.edit(f"`{cheese.milk(text).replace('`', '´')}`")
-
-
-@userge.on_cmd("coinflip", about={
-    'header': "Flip a coin !!",
-    'usage': "{tr}coinflip [heads | tails]"})
-async def coin_(message: Message):
-    """coin"""
-    r = choice(["heads", "tails"])
-    input_str = message.input_str
-    if not input_str:
-        return
-    input_str = input_str.lower()
-    if r == "heads":
-        if input_str == "heads":
-            await message.edit(
-                "The coin landed on: **Heads**.\nYou were correct.")
-        elif input_str == "tails":
-            await message.edit(
-                "The coin landed on: **Heads**.\nYou weren't correct, try again ...")
-        else:
-            await message.edit("The coin landed on: **Heads**.")
-    elif r == "tails":
-        if input_str == "tails":
-            await message.edit(
-                "The coin landed on: **Tails**.\nYou were correct.")
-        elif input_str == "heads":
-            await message.edit(
-                "The coin landed on: **Tails**.\nYou weren't correct, try again ...")
-        else:
-            await message.edit("The coin landed on: **Tails**.")
+    await message.delete() 
 
 
 @userge.on_cmd("slap", about={
@@ -339,140 +81,10 @@ async def slap_(message: Message):
         await message.reply(caption)
 
 
-@userge.on_cmd("(yes|no|maybe|decide)$", about={
-    'header': "Make a quick decision",
-    'flags': {'-gif': "for gif"},
-    'examples': ['{tr}decide', '{tr}yes', '{tr}no', '{tr}maybe']}, name="decide")
-async def decide_(message: Message):
-    """decide"""
-    decision = message.matches[0].group(1).lower()
-    await message.edit("hmm...")
-    if decision != "decide":
-        r = requests.get(f"https://yesno.wtf/api?force={decision}").json()
-    else:
-        r = requests.get("https://yesno.wtf/api").json()
-    path = await pool.run_in_thread(wget.download)(r["image"])
-    chat_id = message.chat.id
-    message_id = message.reply_to_message.id if message.reply_to_message else None
-    await message.delete()
-    if '-gif' in message.flags:
-        await message.client.send_animation(chat_id=chat_id,
-                                            animation=path,
-                                            caption=str(r["answer"]).upper(),
-                                            reply_to_message_id=message_id)
-    else:
-        await message.client.send_photo(chat_id=chat_id,
-                                        photo=path,
-                                        caption=str(r["answer"]).upper(),
-                                        reply_to_message_id=message_id)
-    os.remove(path)
-
-
-@userge.on_cmd("cp", about={
-    'header': "Copypasta the famous meme",
-    'usage': "{tr}cp [input | reply to msg]"})
-async def copypasta(message: Message):
-    """copypasta"""
-    input_str = message.input_or_reply_str
-    if not input_str:
-        await message.edit("`😂🅱️IvE👐sOME👅text👅for✌️Me👌tO👐MAkE👀iT💞funNy!💦`")
-        return
-    reply_text = choice(EMOJIS)
-    # choose a random character in the message to be substituted with 🅱️
-    b_char = choice(input_str).lower()
-    for owo in input_str:
-        if owo == " ":
-            reply_text += choice(EMOJIS)
-        elif owo in EMOJIS:
-            reply_text += owo
-            reply_text += choice(EMOJIS)
-        elif owo.lower() == b_char:
-            reply_text += "🅱️"
-        else:
-            if bool(getrandbits(1)):
-                reply_text += owo.upper()
-            else:
-                reply_text += owo.lower()
-    reply_text += choice(EMOJIS)
-    await message.edit(reply_text)
-
-
-@userge.on_cmd("vapor", about={
-    'header': "Vaporize everything!",
-    'usage': "{tr}vapor [input | reply to msg]"})
-async def vapor_(message: Message):
-    """vapor"""
-    input_str = message.input_or_reply_str
-    if not input_str:
-        await message.err("`Ｇｉｖｅ ｓｏｍｅ ｔｅｘｔ ｆｏｒ ｖａｐｏｒ！`")
-        return
-    reply_text = []
-    for charac in input_str:
-        if 0x21 <= ord(charac) <= 0x7F:
-            reply_text.append(chr(ord(charac) + 0xFEE0))
-        elif ord(charac) == 0x20:
-            reply_text.append(chr(0x3000))
-        else:
-            reply_text.append(charac)
-    await message.edit("".join(reply_text))
-
-
-@userge.on_cmd("str", about={
-    'header': "Stretch it",
-    'usage': "{tr}str [input | reply to msg]"})
-async def stretch(message: Message):
-    """stretch"""
-    input_str = message.input_or_reply_str
-    if not input_str:
-        await message.err("`GiiiiiiiB sooooooomeeeeeee teeeeeeext!`")
-        return
-    await message.edit(
-        sub(r"([aeiouAEIOUａｅｉｏｕＡＥＩＯＵаеиоуюяыэё])", (r"\1" * randint(3, 10)), input_str))
-
-
-@userge.on_cmd("zal", about={
-    'header': "Invoke the feeling of chaos",
-    'usage': "{tr}zal [input | reply to msg]"})
-async def zal_(message: Message):
-    """zal"""
-    input_str = message.input_or_reply_str
-    if not input_str:
-        await message.err("`gͫ ̆ i̛ ̺ v͇̆ ȅͅ   a̢ͦ   s̴̪ c̸̢ ä̸ rͩͣ y͖͞   t̨͚ é̠ x̢͖  t͔͛`")
-        return
-    reply_text = []
-    for charac in input_str:
-        if not charac.isalpha():
-            reply_text.append(charac)
-            continue
-        for _ in range(0, 3):
-            randint_ = randint(0, 2)
-            if randint_ == 0:
-                charac = charac.strip() + choice(ZALG_LIST[0]).strip()
-            elif randint_ == 1:
-                charac = charac.strip() + choice(ZALG_LIST[1]).strip()
-            else:
-                charac = charac.strip() + choice(ZALG_LIST[2]).strip()
-        reply_text.append(charac)
-    await message.edit("".join(reply_text))
-
-
-@userge.on_cmd("owo", about={
-    'header': "UwU",
-    'usage': "{tr}owo [input | reply to msg]"})
-async def owo_(message: Message):
-    """owo"""
-    input_str = message.input_or_reply_str
-    if not input_str:
-        await message.err("` UwU no text given! `")
-        return
-    reply_text = sub(r"([rl])", "w", input_str)
-    reply_text = sub(r"([RL])", "W", reply_text)
-    reply_text = sub(r"n([aeiou])", r"ny\1", reply_text)
-    reply_text = sub(r"N([aeiouAEIOU])", r"Ny\1", reply_text)
-    reply_text = sub(r"!", " " + choice(UWUS), reply_text)
-    reply_text = reply_text.replace("ove", "uv")
-    reply_text += " " + choice(UWUS)
-    await message.edit(reply_text)
+@userge.on_cmd("insult$", about={'header': "Check yourself ;)"})
+async def insult_(message: Message):
+    """insult"""
+    await check_and_send(message, choice(INSULT_STRINGS), parse_mode=enums.ParseMode.HTML)
 
 
 @userge.on_cmd("mock", about={
@@ -510,69 +122,62 @@ async def lfy_(message: Message):
     await message.edit(f"Here you are, help yourself.\n[{query}]({r.json()['shorturl']})")
 
 
-@userge.on_cmd("scam", about={
-    'header': "Create fake chat actions, for fun.",
-    'available actions': [
-        'typing (default)', 'playing', 'upload_photo', 'upload_video',
-        'upload_audio', 'upload_document', 'upload_video_note',
-        'record_video', 'record_audio', 'record_video_note',
-        'find_location', 'choose_contact', 'choose_sticker', 'import_history'],
-    'usage': "{tr}scam\n{tr}scam [action]\n{tr}scam [time]\n{tr}scam [action] [time]"})
-async def scam_(message: Message):
-    """scam"""
-    options = ('typing', 'upload_photo', 'record_video', 'upload_video', 'record_audio',
-               'upload_audio', 'upload_document', 'find_location', 'record_video_note',
-               'upload_video_note', 'choose_contact', 'playing', 'choose_sticker', 'import_history')
+@userge.on_cmd("hi", about={
+    'header': "Greet everyone!",
+    'usage': "{tr}hi\n{tr}hi [emoji | character]\n{tr}hi [emoji | character] [emoji | character]"})
+async def hi_(message: Message):
+    """hi"""
     input_str = message.input_str
-    args = input_str.split()
-    if len(args) == 0:  # Let bot decide action and time
-        _scam_action = choice(options)
-        scam_time = randint(30, 60)
-    elif len(args) == 1:  # User decides time/action, bot decides the other.
-        try:
-            _scam_action = str(args[0])
-            scam_time = randint(30, 60)
-        except ValueError:
-            _scam_action = choice(options)
-            scam_time = int(args[0])
-    elif len(args) == 2:  # User decides both action and time
-        _scam_action = str(args[0])
-        scam_time = int(args[1])
+    if not input_str:
+        await message.edit(choice(HELLOSTR), parse_mode=enums.ParseMode.HTML)
     else:
-        await message.err("`Invalid Syntax !!`")
-        return
-    scam_action = getattr(enums.ChatAction, _scam_action.upper())
+        args = input_str.split()
+        if len(args) == 2:
+            paytext, filler = args
+        else:
+            paytext = args[0]
+            filler = choice(EMOJIS)
+        pay = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}".format(
+            paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2,
+            paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2,
+            paytext * 2 + filler * 4 + paytext * 2 + filler * 4,
+            paytext * 2 + filler * 4 + paytext * 2 + filler * 4,
+            paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2,
+            paytext * 8 + filler * 2 + paytext * 2,
+            paytext * 8 + filler * 2 + paytext * 2,
+            paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2,
+            paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2,
+            paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2,
+            paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2,
+            paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2)
+        await message.edit(pay)
+
+
+@userge.on_cmd("belo", about={
+    'header': "Get a Logical Quote",
+    'usage': "{tr}belo"}, allow_via_bot=False)
+async def being_logical(message: Message):
+    raw_list = [msg async for msg in userge.get_chat_history("@BeingLogical")]
+    raw_message = choice(raw_list)
+    await message.edit(raw_message.text)
+
+
+@userge.on_cmd("tips", about={
+    'header': "Get a Pro Tip",
+    'usage': "{tr}tips"}, allow_via_bot=False)
+async def pro_tips(message: Message):
+    raw_list = [msg async for msg in userge.get_chat_history("Knowledge_Facts_Quotes_Reddit")]
     try:
-        if scam_time > 0:
-            chat_id = message.chat.id
-            await message.delete()
-            count = 0
-            while count <= scam_time:
-                await message.client.send_chat_action(chat_id, scam_action)
-                await asyncio.sleep(5)
-                count += 5
-    except Exception:  # pylint: disable=broad-except
-        await message.delete()
+        raw_message = choice(raw_list)
+        pru_text = raw_message.text
+        while "Pro Tip" not in pru_text:
+            raw_message = choice(raw_list)
+            pru_text = raw_message.text
+        await message.edit(pru_text)
+    # None Type Error 😴🙃
+    except Exception:
+        await message.edit("I Ran Out of Tips.")
 
-
-@userge.on_cmd("try", about={
-    'header': "send dart or dice randomly",
-    'usage': "{tr}try [send to chat or anyone]"})
-async def dice_gen(message: Message):
-    """send dice"""
-    random_emo = choice(DICE_EMO)
-    await message.client.send_dice(message.chat.id, random_emo)
-    await message.delete()
-
-
-THROW = ("throws", "flings", "chucks", "hurls")
-
-HIT = ("hits", "whacks", "slaps", "smacks", "bashes")
-
-WHERE = ("in the chest", "on the head", "on the butt", "on the crotch")
-
-METOOSTR = (
-    "Me too thanks", "Haha yes, me too", "Same lol", "Me irl", "Same here", "Haha yes", "Me rn")
 
 HELLOSTR = (
     "Hi !", "‘Ello, gov'nor!", "What’s crackin’?", "‘Sup, homeslice?", "Howdy, howdy ,howdy!",
@@ -644,58 +249,6 @@ SLAP_TEMPLATES = (
     "put {victim} in the friendzone.",
     "slaps {victim} with a DMCA takedown request!")
 
-CHASE_STR = (
-    "Where do you think you're going?",
-    "Huh? what? did they get away?",
-    "ZZzzZZzz... Huh? what? oh, just them again, nevermind.",
-    "Get back here!",
-    "Not so fast...",
-    "Look out for the wall!",
-    "Don't leave me alone with them!!",
-    "You run, you die.",
-    "Jokes on you, I'm everywhere",
-    "You're gonna regret that...",
-    "You could also try /kickme, I hear that's fun.",
-    "Go bother someone else, no-one here cares.",
-    "You can run, but you can't hide.",
-    "Is that all you've got?",
-    "I'm behind you...",
-    "You've got company!",
-    "We can do this the easy way, or the hard way.",
-    "You just don't get it, do you?",
-    "Yeah, you better run!",
-    "Please, remind me how much I care?",
-    "I'd run faster if I were you.",
-    "That's definitely the droid we're looking for.",
-    "May the odds be ever in your favour.",
-    "Famous last words.",
-    "And they disappeared forever, never to be seen again.",
-    "\"Oh, look at me! I'm so cool, I can run from a bot!\" - this person",
-    "Yeah yeah, just tap /kickme already.",
-    "Here, take this ring and head to Mordor while you're at it.",
-    "Legend has it, they're still running...",
-    "Unlike Harry Potter, your parents can't protect you from me.",
-    "Fear leads to anger. Anger leads to hate. Hate leads to suffering. "
-    "If you keep running in fear, you might "
-    "be the next Vader.",
-    "Multiple calculations later, I have decided my interest in your shenanigans is exactly 0.",
-    "Legend has it, they're still running.",
-    "Keep it up, not sure we want you here anyway.",
-    "You're a wiza- Oh. Wait. You're not Harry, keep moving.",
-    "NO RUNNING IN THE HALLWAYS!",
-    "Hasta la vista, baby.",
-    "Who let the dogs out?",
-    "It's funny, because no one cares.",
-    "Ah, what a waste. I liked that one.",
-    "Frankly, my dear, I don't give a damn.",
-    "My milkshake brings all the boys to yard... So run faster!",
-    "You can't HANDLE the truth!",
-    "A long time ago, in a galaxy far far away... Someone would've cared about that. "
-    "Not anymore though.",
-    "Hey, look at them! They're running from the inevitable banhammer... Cute.",
-    "Han shot first. So will I.",
-    "What are you running after, a white rabbit?",
-    "As The Doctor would say... RUN!")
 
 INSULT_STRINGS = (
     "Owww ... Such a stupid idiot.",
@@ -765,72 +318,27 @@ EMOJIS = (
     "😂", "😂", "👌", "✌", "💞", "👍", "👌", "💯", "🎶", "👀", "😂", "👓", "👏", "👐", "🍕",
     "💥", "🍴", "💦", "💦", "🍑", "🍆", "😩", "😏", "👉👌", "👀", "👅", "😩", "🚰")
 
-DICE_EMO = ("🎯", "🎲")
 
-ZALG_LIST = (
-    ("̖", " ̗", " ̘", " ̙", " ̜", " ̝", " ̞", " ̟", " ̠", " ̤", " ̥", " ̦", " ̩", " ̪", " ̫",
-     " ̬", " ̭", " ̮", " ̯", " ̰", " ̱", " ̲", " ̳", " ̹", " ̺", " ̻", " ̼", " ͅ", " ͇",
-     " ͈", " ͉", " ͍", " ͎", " ͓", " ͔", " ͕", " ͖", " ͙", " ͚", " "),
+async def check_and_send(message: Message, *args, **kwargs):
+    replied = message.reply_to_message
+    if replied:
+        await asyncio.gather(
+            message.delete(),
+            replied.reply(*args, **kwargs)
+        )
+    else:
+        await message.edit(*args, **kwargs)
 
-    (" ̍", " ̎", " ̄", " ̅", " ̿", " ̑", " ̆", " ̐", " ͒", " ͗", " ͑", " ̇", " ̈", " ̊",
-     " ͂", " ̓", " ̈́", " ͊", " ͋", " ͌", " ̃", " ̂", " ̌", " ͐", " ́", " ̋", " ̏", " ̽",
-     " ̉", " ͣ", " ͤ", " ͥ", " ͦ", " ͧ", " ͨ", " ͩ", " ͪ", " ͫ", " ͬ", " ͭ", " ͮ", " ͯ",
-     " ̾", " ͛", " ͆", " ̚"),
 
-    (" ̕", " ̛", " ̀", " ́", " ͘", " ̡", " ̢", " ̧", " ̨", " ̴", " ̵", " ̶", " ͜",
-     " ͝", " ͞", " ͟", " ͠", " ͢", " ̸", " ̷", " ͡")
-)
+@userge.on_cmd("run$", about={'header': "Let Me Run, run, RUNNN!"})
+async def run_(message: Message):
+    """run"""
+    await check_and_send(message, choice(RUNS_STR), parse_mode=enums.ParseMode.HTML)
 
-UWUS = (
-    "(・`ω´・)", ";;w;;", "owo", "UwU", ">w<", "^w^", r"\(^o\) (/o^)/", "( ^ _ ^)∠☆", "(ô_ô)",
-    "~:o", ";-;", "(*^*)", "(>_", "(♥_♥)", "*(^O^)*", "((+_+))")
 
-SHGS = (
-    "┐(´д｀)┌", "┐(´～｀)┌", "┐(´ー｀)┌", "┐(￣ヘ￣)┌", "╮(╯∀╰)╭", "╮(╯_╰)╭", "┐(´д`)┌", "┐(´∀｀)┌",
-    "ʅ(́◡◝)ʃ", "┐(ﾟ～ﾟ)┌", "┐('д')┌", "┐(‘～`;)┌", "ヘ(´－｀;)ヘ", "┐( -“-)┌", "ʅ（´◔౪◔）ʃ",
-    "ヽ(゜～゜o)ノ", "ヽ(~～~ )ノ", "┐(~ー~;)┌", "┐(-。ー;)┌", r"¯\_(ツ)_/¯", r"¯\_(⊙_ʖ⊙)_/¯",
-    r"¯\_༼ ಥ ‿ ಥ ༽_/¯", "乁( ⁰͡  Ĺ̯ ⁰͡ ) ㄏ")
+THROW = ("throws", "flings", "chucks", "hurls")
 
-CRI = (
-    "أ‿أ", "╥﹏╥", "(;﹏;)", "(ToT)", "(┳Д┳)", "(ಥ﹏ಥ)", "（；へ：）", "(T＿T)", "（πーπ）", "(Ｔ▽Ｔ)",
-    "(⋟﹏⋞)", "（ｉДｉ）", "(´Д⊂ヽ", "(;Д;)", "（>﹏<）", "(TдT)", "(つ﹏⊂)", "༼☯﹏☯༽", "(ノ﹏ヽ)",
-    "(ノAヽ)", "(╥_╥)", "(T⌓T)", "(༎ຶ⌑༎ຶ)", "(☍﹏⁰)｡", "(ಥ_ʖಥ)", "(つд⊂)", "(≖͞_≖̥)", "(இ﹏இ`｡)",
-    "༼ಢ_ಢ༽", "༼ ༎ຶ ෴ ༎ຶ༽")
+HIT = ("hits", "whacks", "slaps", "smacks", "bashes")
 
-FACEREACTS = (
-    "ʘ‿ʘ", "ヾ(-_- )ゞ", "(っ˘ڡ˘ς)", "(´ж｀ς)", "( ಠ ʖ̯ ಠ)", "(° ͜ʖ͡°)╭∩╮", "(ᵟຶ︵ ᵟຶ)", "(งツ)ว",
-    "ʚ(•｀", "(っ▀¯▀)つ", "(◠﹏◠)", "( ͡ಠ ʖ̯ ͡ಠ)", "( ఠ ͟ʖ ఠ)", "(∩｀-´)⊃━☆ﾟ.*･｡ﾟ", "(⊃｡•́‿•̀｡)⊃",
-    "(._.)", "{•̃_•̃}", "(ᵔᴥᵔ)", "♨_♨", "⥀.⥀", "ح˚௰˚づ ", "(҂◡_◡)", "ƪ(ړײ)‎ƪ​​", "(っ•́｡•́)♪♬",
-    "◖ᵔᴥᵔ◗ ♪ ♫ ", "(☞ﾟヮﾟ)☞", "[¬º-°]¬", "(Ծ‸ Ծ)", "(•̀ᴗ•́)و ̑̑", "ヾ(´〇`)ﾉ♪♪♪", "(ง'̀-'́)ง",
-    "ლ(•́•́ლ)", "ʕ •́؈•̀ ₎", "♪♪ ヽ(ˇ∀ˇ )ゞ", "щ（ﾟДﾟщ）", "( ˇ෴ˇ )", "눈_눈", "(๑•́ ₃ •̀๑) ",
-    "( ˘ ³˘)♥ ", "ԅ(≖‿≖ԅ)", "♥‿♥", "◔_◔", "⁽⁽ଘ( ˊᵕˋ )ଓ⁾⁾", "乁( ◔ ౪◔)「      ┑(￣Д ￣)┍",
-    "( ఠൠఠ )ﾉ", "٩(๏_๏)۶", "┌(ㆆ㉨ㆆ)ʃ", "ఠ_ఠ", "(づ｡◕‿‿◕｡)づ", "༼ ༎ຶ ෴ ༎ຶ༽", "｡ﾟ( ﾟஇ‸இﾟ)ﾟ｡",
-    "(づ￣ ³￣)づ", "(⊙.☉)7", "ᕕ( ᐛ )ᕗ", "t(-_-t)", "(ಥ⌣ಥ)", "ヽ༼ ಠ益ಠ ༽ﾉ", "༼∵༽ ༼⍨༽ ༼⍢༽ ༼⍤༽",
-    "ミ●﹏☉ミ", "(⊙_◎)", "¿ⓧ_ⓧﮌ", "ಠ_ಠ", "(´･_･`)", "ᕦ(ò_óˇ)ᕤ", "⊙﹏⊙", "(╯°□°）╯︵ ┻━┻",
-    r"¯\_(⊙︿⊙)_/¯", "٩◔̯◔۶", "°‿‿°", "ᕙ(⇀‸↼‶)ᕗ", "⊂(◉‿◉)つ", "V•ᴥ•V", "q(❂‿❂)p", "ಥ_ಥ",
-    "ฅ^•ﻌ•^ฅ", "ಥ﹏ಥ", "（ ^_^）o自自o（^_^ ）", "ಠ‿ಠ", "ヽ(´▽`)/", "ᵒᴥᵒ#", "( ͡° ͜ʖ ͡°)",
-    "┬─┬﻿ ノ( ゜-゜ノ)", "ヽ(´ー｀)ノ", "☜(⌒▽⌒)☞", "ε=ε=ε=┌(;*´Д`)ﾉ", "(╬ ಠ益ಠ)", "┬─┬⃰͡ (ᵔᵕᵔ͜ )",
-    "┻━┻ ︵ヽ(`Д´)ﾉ︵﻿ ┻━┻", r"¯\_(ツ)_/¯", "ʕᵔᴥᵔʔ", "(`･ω･´)", "ʕ•ᴥ•ʔ", "ლ(｀ー´ლ)", "ʕʘ̅͜ʘ̅ʔ",
-    "（　ﾟДﾟ）", r"¯\(°_o)/¯", "(｡◕‿◕｡)", "(ノಠ ∩ಠ)ノ彡( \\o°o)\\", "“ヽ(´▽｀)ノ”", "( ͡° ͜ʖ ͡°)",
-    r"¯\_(ツ)_/¯", "( ͡°( ͡° ͜ʖ( ͡° ͜ʖ ͡°)ʖ ͡°) ͡°)", "ʕ•ᴥ•ʔ", "(▀̿Ĺ̯▀̿ ̿)", "(ง ͠° ͟ل͜ ͡°)ง",
-    "༼ つ ◕_◕ ༽つ", "ಠ_ಠ", "(☞ ͡° ͜ʖ ͡°)☞", "¯_༼ ି ~ ି ༽_/¯", "c༼ ͡° ͜ʖ ͡° ༽⊃")
+WHERE = ("in the chest", "on the head", "on the butt", "on the crotch")
 
-HAPPY = ("( ͡° ͜ʖ ͡°)", "(ʘ‿ʘ)", "(✿´‿`)", "=͟͟͞͞٩(๑☉ᴗ☉)੭ु⁾⁾", "(*⌒▽⌒*)θ～♪",
-         "°˖✧◝(⁰▿⁰)◜✧˖°", "✌(-‿-)✌", "⌒°(❛ᴗ❛)°⌒", "(ﾟ<|＼(･ω･)／|>ﾟ)", "ヾ(o✪‿✪o)ｼ")
-
-THINKING = ("(҂⌣̀_⌣́)", "（；¬＿¬)", "(-｡-;", "┌[ O ʖ̯ O ]┐", "〳 ͡° Ĺ̯ ͡° 〵")
-
-WAVING = (
-    "(ノ^∇^)", "(;-_-)/", "@(o・ェ・)@ノ", "ヾ(＾-＾)ノ", "ヾ(◍’౪`◍)ﾉﾞ♡", "(ό‿ὸ)ﾉ", "(ヾ(´・ω・｀)")
-
-WTF = ("༎ຶ‿༎ຶ", "(‿ˠ‿)", "╰U╯☜(◉ɷ◉ )", "(;´༎ຶ益༎ຶ`)♡", "╭∩╮(︶ε︶*)chu", "( ＾◡＾)っ (‿|‿)")
-
-LOVE = ("乂❤‿❤乂", "(｡♥‿♥｡)", "( ͡~ ͜ʖ ͡°)", "໒( ♥ ◡ ♥ )७", "༼♥ل͜♥༽")
-
-CONFUSED = ("(・_・ヾ", "｢(ﾟﾍﾟ)", "﴾͡๏̯͡๏﴿", "(￣■￣;)!?", "▐ ˵ ͠° (oo) °͠ ˵ ▐", "(-_-)ゞ゛")
-
-DEAD = ("(✖╭╮✖)", "✖‿✖", "(+_+)", "(✖﹏✖)", "∑(✘Д✘๑)")
-
-SAD = ("(＠´＿｀＠)", "⊙︿⊙", "(▰˘︹˘▰)", "●︿●", "(　´_ﾉ` )", "彡(-_-;)彡")
-
-DOG = ("-ᄒᴥᄒ-", "◖⚆ᴥ⚆◗")
